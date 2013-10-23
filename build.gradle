@@ -17,7 +17,7 @@ configure(allprojects) { project ->
 	apply plugin: "propdeps-maven"
 	apply plugin: "propdeps-idea"
 	apply plugin: "propdeps-eclipse"
-	
+
 	uploadArchives {
 	    repositories {
 	        mavenDeployer {
@@ -35,16 +35,23 @@ configure(allprojects) { project ->
 	}
 }
 
-configurations.compile {
-	resolutionStrategy {
-		failOnVersionConflict()
+configurations {
+	all {
+		resolutionStrategy {
+			failOnVersionConflict()
+		}
+		exclude group: "cglib", module: "cglib"
+		exclude group: "cglib", module: "cglib-full"
 	}
 }
 
 subprojects {
 	apply plugin: "java"
 	apply plugin: "maven"
+	apply plugin: "project-report"
 	apply plugin: "checkstyle"
+
+	apply from: new File(rootDir, "gradle/aspects.gradle")
 
 	checkstyle {
 		configFile = new File(rootDir, "checkstyle-rules.xml")
@@ -84,13 +91,17 @@ subprojects {
 	}
 
 	dependencies {
+		ajc "org.aspectj:aspectjtools:${aspectj_version}"
+
 		provided("javax.servlet:servlet-api:${servlet_api_version}")
+		provided("cglib:cglib:[2.0, )")
+		provided("cglib:cglib-full:[2.0, )")
 
 		testCompile("junit:junit:${junit_version}")
-		testCompile("org.mockito:mockito-core:${mockito_version}")
 		testCompile("org.springframework:spring-test:${spring_version}")
-
-		testRuntime("org.hibernate:hibernate-entitymanager:${hibernate_core_version}")
+		testCompile("org.mockito:mockito-core:${mockito_version}")
+		
+		testRuntime("org.hibernate:hibernate-entitymanager:${hibernate_core_version}")	
 
 		compile("org.aspectj:aspectjrt:${aspectj_version}")
 		compile("org.aspectj:aspectjweaver:${aspectj_version}")
@@ -107,6 +118,8 @@ subprojects {
 }
 
 project("cas-server-core") {
+	description "Jasig CAS Core"
+
 	dependencies {
 		compile("org.perf4j:perf4j:${perf4j_version}:log4jonly") 
 
@@ -153,12 +166,15 @@ project("cas-server-core") {
 }
 
 project("cas-server-support-generic") {
+	description "Jasig CAS Generic Support"
 	dependencies {
 		compile project(":cas-server-core")
 	}
 }
 
 project("cas-server-webapp-support") {
+	description "Jasig CAS Web Application Support"
+
 	dependencies {
 		testCompile("org.mockito:mockito-core:${mockito_version}")
 		testRuntime("org.hsqldb:hsqldb:${hsqldb_version}")
@@ -182,6 +198,7 @@ project("cas-server-webapp-support") {
 }
 
 project("cas-server-support-legacy") {
+	description "Jasig CAS Legacy Support"
 	dependencies {
 		compile project(":cas-server-core")
 		compile("cas:cas:2.0.12")
@@ -189,6 +206,7 @@ project("cas-server-support-legacy") {
 }
 
 project("cas-server-support-jdbc") {
+	description "Jasig CAS JDBC Support"
 	dependencies {
 		compile project(":cas-server-core")
 		compile("org.springframework:spring-jdbc:${spring_version}")
@@ -196,6 +214,7 @@ project("cas-server-support-jdbc") {
 }
 
 project("cas-server-support-openid") {
+	description "Jasig CAS OpenId Support"
 	dependencies {
 		compile project(":cas-server-core")
 		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
@@ -206,8 +225,8 @@ project("cas-server-support-openid") {
 }
 
 project("cas-server-support-ldap") {
+	description "Jasig CAS LDAP Support"
 	dependencies {
-
 		compile("joda-time:joda-time:${joda_time_version}")
 		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
 		compile("org.springframework:spring-expression:${spring_version}")
@@ -221,6 +240,7 @@ project("cas-server-support-ldap") {
 }
 
 project("cas-server-support-trusted") {
+	description "Jasig CAS Trusted User Support"
 	dependencies {
 		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
 		compile project(":cas-server-core")
@@ -228,6 +248,7 @@ project("cas-server-support-trusted") {
 }
 
 project("cas-server-support-spnego") {
+	description "Jasig CAS SPNEGO/NTLM Support"
 	dependencies {
 		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
 		compile project(":cas-server-core")
@@ -237,6 +258,7 @@ project("cas-server-support-spnego") {
 }
 
 project("cas-server-support-pac4j") {
+	description "Jasig CAS Client Protocols Support using PAC4J"
 	dependencies {
 		compile project(":cas-server-core")
 		compile("org.pac4j:pac4j-core:${pac4j_version}")
@@ -254,6 +276,8 @@ project("cas-server-integration-ehcache") {
 }
 
 project("cas-server-integration-memcached") {
+	description "Jasig CAS Memcached Integration"
+
 	dependencies {
 		compile project(":cas-server-core")
 		compile("net.spy:spymemcached:${spy_memcached_version}")
@@ -266,6 +290,7 @@ project("cas-server-integration-memcached") {
 project("cas-server-uber-webapp") {
 	apply plugin: "war"
 
+	description "Jasig CAS - Uber WAR"
 	dependencies {
 		runtime project(":cas-server-webapp") 
 		runtime project(":cas-server-support-jdbc")
@@ -282,11 +307,24 @@ project("cas-server-uber-webapp") {
 	}
 }
 
+/*
+project("cas-server-compatibility") {
+	description "Jasig CAS Compatibility Tests"
+	dependencies {
+		compile("cas:casclient:2.1.1")
+		compile("jwebunit:jwebunit:1.2")
+		testCompile("org.springframework:spring-core:${spring_version}")
+	}
+}
+*/
+
 project("cas-server-documentation") {
-	
+	description "Jasig CAS Documentation"
 }
 
 project("cas-server-extension-clearpass") {
+	description "Jasig CAS ClearPass Extension"
+
 	dependencies {
 		compile project(":cas-server-core") 
 		compile("org.jasig.cas.client:cas-client-core:${cas_client_version}") {
@@ -300,6 +338,8 @@ project("cas-server-extension-clearpass") {
 
 project("cas-management-webapp") {
 	apply plugin: "war"
+
+	description "Jasig CAS Management Web Application"
 
 	dependencies {
 		compile("com.github.inspektr:inspektr-support-spring:${inspektr_version}")
@@ -340,6 +380,8 @@ project("cas-management-webapp") {
 }
 
 project("cas-server-integration-restlet") {
+	description "Jasig CAS Restlet Integration"
+
 	dependencies {
 		compile project(":cas-server-core")
 		compile("org.restlet.jee:org.restlet:${restlet_version}")
@@ -358,9 +400,10 @@ project("cas-server-integration-restlet") {
 }
 
 project("cas-server-integration-jboss") {
+	description "Jasig CAS JBoss Cache Integration"
 	dependencies {
 		compile project(":cas-server-core")
-		compile("org.jboss.cache:jboss-cache-core:2.2.2.GA") {
+		compile("org.jboss.cache:jboss-cache-core:${jboss_cache_version}") {
 			exclude group: "commons-logging", module: "commons-logging"
 		}
 		
@@ -369,6 +412,7 @@ project("cas-server-integration-jboss") {
 }
 
 project("cas-server-support-saml") {
+	description "Jasig CAS SAML Server and Validation Support"
 	dependencies {
 		compile project(":cas-server-core")
 		runtime("org.apache.santuario:xmlsec:1.4.3") {
@@ -383,6 +427,7 @@ project("cas-server-support-saml") {
 }
 
 project("cas-server-support-oauth") {
+	description "Jasig CAS OAuth Server Support"
 	dependencies {
 		compile project(":cas-server-core")
 		compile("com.fasterxml.jackson.core:jackson-databind:${jackson_databind_version}")
@@ -390,8 +435,8 @@ project("cas-server-support-oauth") {
 }
 
 project("cas-server-support-x509") {
+	description "Jasig CAS X.509 Client Certificate Support"
 	dependencies {
-		
 		compile project(":cas-server-core")
 		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
 		compile("vt-crypt:edu.vt.middleware:2.1.4")
@@ -404,6 +449,7 @@ project("cas-server-support-x509") {
 }
 
 project("cas-server-support-radius") {
+	description "Jasig CAS RADIUS Support"
 	dependencies {
 		compile("net.jradius:jradius-core:${jradius_version}") {
 			 exclude group: "commons-logging", module: "commons-logging"
@@ -419,7 +465,7 @@ project("cas-server-support-radius") {
 project("cas-server-webapp") {
 	apply plugin: "war"
 
-
+	description "Jasig CAS Web Application"
 	dependencies {
 		runtime("javax.servlet:jstl:${jstl_version}")
 		runtime("taglibs:standard:${taglibs_version}")

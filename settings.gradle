@@ -1,5 +1,3 @@
-include 'cas-management-webapp'
-
 include 'cas-server-core'
 include 'cas-server-support-generic'
 include 'cas-server-support-ldap'
@@ -21,5 +19,5 @@ include 'cas-server-extension-clearpass'
 include 'cas-server-uber-webapp'
 include 'cas-server-webapp-support'
 include 'cas-server-webapp'
-
+include 'cas-management-webapp'
 include 'cas-server-documentation'
