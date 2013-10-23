@@ -16,3 +16,7 @@ pom.xml.versionsBackup
 *.log
 
 **/.checkstyle
+
+.gradle/
+**/build/**
+gradle/wrapper/

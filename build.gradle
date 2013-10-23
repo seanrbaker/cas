@@ -1,0 +1,438 @@
+buildscript {
+	repositories {
+    	maven { url "http://repo.springsource.org/plugins-release" }
+	}
+	dependencies {
+	    classpath("org.springframework.build.gradle:propdeps-plugin:0.0.4")
+    }
+}
+
+defaultTasks "clean", "build"
+
+configure(allprojects) { project ->
+	apply plugin: "idea"
+	apply plugin: "eclipse"
+	apply plugin: "groovy"
+	apply plugin: "propdeps"
+	apply plugin: "propdeps-maven"
+	apply plugin: "propdeps-idea"
+	apply plugin: "propdeps-eclipse"
+	
+	uploadArchives {
+	    repositories {
+	        mavenDeployer {
+	            pom.project {
+	                licenses {
+	                    license {
+	                        name 'The Apache Software License, Version 2.0'
+	                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+	                        distribution 'repo'
+	                    }
+	                }
+	            }
+	        }
+	    }
+	}
+}
+
+configurations.compile {
+	resolutionStrategy {
+		failOnVersionConflict()
+	}
+}
+
+subprojects {
+	apply plugin: "java"
+	apply plugin: "maven"
+	apply plugin: "checkstyle"
+
+	checkstyle {
+		configFile = new File(rootDir, "checkstyle-rules.xml")
+		configProperties = ["checkstyle.suppressions.file": new File(rootDir, "checkstyle-suppressions.xml")]
+		ignoreFailures false
+		showViolations true
+		toolVersion "5.6"
+	}
+
+	repositories {
+		maven { url "http://oss.sonatype.org/content/repositories/releases/" }
+		maven { url "thtp://oss.sonatype.org/content/repositories/snapshots/" }
+		maven { url "https://maven.java.net/content/repositories/releases" }
+		maven { url "https://repository.apache.org/content/repositories/releases" } 
+		maven { url "http://repo.spring.io/libs-release" }
+		maven { url "http://repo.springsource.org/plugins-release" }
+		maven { url "http://coova-dev.s3.amazonaws.com/mvn" }
+		maven { url "http://maven.restlet.org" }
+		maven { url "http://developer.ja-sig.org/maven2" }
+		maven { url "http://repository.jboss.org/nexus/content/groups/public-jboss" }
+
+		mavenLocal()
+		mavenCentral()     
+	}
+
+	task testJar(type: Jar, dependsOn: testClasses, description: "archive the testClasses") {
+	   baseName = "test-${project.archivesBaseName}"
+	   from sourceSets.test.output
+	}
+
+	configurations {
+	    tests
+	}
+
+	artifacts {
+	   tests testJar
+	}
+
+	dependencies {
+		provided("javax.servlet:servlet-api:${servlet_api_version}")
+
+		testCompile("junit:junit:${junit_version}")
+		testCompile("org.mockito:mockito-core:${mockito_version}")
+		testCompile("org.springframework:spring-test:${spring_version}")
+
+		testRuntime("org.hibernate:hibernate-entitymanager:${hibernate_core_version}")
+
+		compile("org.aspectj:aspectjrt:${aspectj_version}")
+		compile("org.aspectj:aspectjweaver:${aspectj_version}")
+		compile("javax.validation:validation-api:${javax_validation_version}")
+
+		runtime("org.hibernate:hibernate-validator:${hibernate_validator_version}")
+
+		compile("org.slf4j:slf4j-api:${slf4j_version}")
+		runtime("org.slf4j:slf4j-log4j12:${slf4j_version}") {
+			exclude group: "log4j", module: "log4j"
+		}
+		compile("org.slf4j:jcl-over-slf4j:${slf4j_version}")
+	}
+}
+
+project("cas-server-core") {
+	dependencies {
+		compile("org.perf4j:perf4j:${perf4j_version}:log4jonly") 
+
+		compile("com.github.inspektr:inspektr-audit:${inspektr_version}")
+		compile("com.github.inspektr:inspektr-common:${inspektr_version}")
+		compile("com.github.inspektr:inspektr-support-spring:${inspektr_version}")
+
+		compile("log4j:log4j:${log4j_version}") {
+			 exclude group: "javax.mail", module: "mail"
+			 exclude group: "javax.jms", module: "jms"
+			 exclude group: "com.sun.jdmk", module: "jmxtools"
+			 exclude group: "com.sun.jmx", module: "jmxri"
+		}
+		compile("org.jasig.service.persondir:person-directory-impl:${persondir_version}")
+
+		compile("commons-codec:commons-codec:${commons_codec_version}")
+
+		compile("org.hibernate:hibernate-core:${hibernate_core_version}")
+		
+		compile("org.springframework:spring-orm:${spring_version}")
+		compile("org.springframework:spring-jdbc:${spring_version}")
+		compile("org.springframework:spring-core:${spring_version}")
+		compile("org.springframework:spring-beans:${spring_version}")
+		compile("org.springframework:spring-webmvc:${spring_version}")
+		compile("org.springframework:spring-context-support:${spring_version}")
+		compile("org.springframework:spring-tx:${spring_version}")
+		compile("org.springframework:spring-context:${spring_version}")
+
+		compile("org.springframework.security:spring-security-core:${spring_security_version}")
+
+		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
+
+		compile("commons-io:commons-io:${commons_io_version}")
+		compile("joda-time:joda-time:${joda_time_version}")
+
+		testRuntime("org.hsqldb:hsqldb:${hsqldb_version}")
+		testRuntime("org.opensymphony.quartz:quartz:${quartz_version}") 
+		testRuntime("javassist:javassist:3.12.1.GA")	
+
+		runtime("commons-jexl:commons-jexl:${commons_jexl_version}") {
+			exclude group: "commons-logging", module: "commons-logging"
+		}
+	}
+}
+
+project("cas-server-support-generic") {
+	dependencies {
+		compile project(":cas-server-core")
+	}
+}
+
+project("cas-server-webapp-support") {
+	dependencies {
+		testCompile("org.mockito:mockito-core:${mockito_version}")
+		testRuntime("org.hsqldb:hsqldb:${hsqldb_version}")
+
+		runtime("com.github.inspektr:inspektr-support-spring:${inspektr_version}")
+
+		compile("org.springframework.security:spring-security-core:${spring_security_version}")
+		compile("org.springframework.security:spring-security-web:${spring_security_version}")
+		compile("org.springframework.security:spring-security-config:${spring_security_version}")
+		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
+
+		compile("org.springframework:spring-aop:${spring_version}")
+		compile("org.springframework:spring-context:${spring_version}")
+		compile("org.springframework:spring-expression:${spring_version}")
+
+		compile("org.opensymphony.quartz:quartz:${quartz_version}") 
+
+		testCompile project(path: ":cas-server-core", configuration: "tests")
+		compile project(":cas-server-support-generic")
+	}
+}
+
+project("cas-server-support-legacy") {
+	dependencies {
+		compile project(":cas-server-core")
+		compile("cas:cas:2.0.12")
+	}
+}
+
+project("cas-server-support-jdbc") {
+	dependencies {
+		compile project(":cas-server-core")
+		compile("org.springframework:spring-jdbc:${spring_version}")
+	}
+}
+
+project("cas-server-support-openid") {
+	dependencies {
+		compile project(":cas-server-core")
+		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
+		compile("org.openid4java:openid4java-nodeps:${openid4java_version}")
+		compile("org.apache.httpcomponents:httpclient:${httpclient_version}")
+		testCompile project(path: ":cas-server-core", configuration: "tests")
+	}
+}
+
+project("cas-server-support-ldap") {
+	dependencies {
+
+		compile("joda-time:joda-time:${joda_time_version}")
+		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
+		compile("org.springframework:spring-expression:${spring_version}")
+		compile("org.ldaptive:ldaptive:${ldaptive_version}")
+
+		compile project(":cas-server-core")
+		
+		testCompile("com.fasterxml.jackson.core:jackson-databind:${jackson_databind_version}")
+	}
+	
+}
+
+project("cas-server-support-trusted") {
+	dependencies {
+		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
+		compile project(":cas-server-core")
+	}
+}
+
+project("cas-server-support-spnego") {
+	dependencies {
+		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
+		compile project(":cas-server-core")
+		compile("org.samba.jcifs:jcifs:1.2.25")
+		compile("org.samba.jcifs:jcifs-ext:0.9.4")
+	}
+}
+
+project("cas-server-support-pac4j") {
+	dependencies {
+		compile project(":cas-server-core")
+		compile("org.pac4j:pac4j-core:${pac4j_version}")
+
+		testCompile("org.pac4j:pac4j-oauth:${pac4j_version}")
+	}
+}
+
+project("cas-server-integration-ehcache") {
+	dependencies {
+		compile project(":cas-server-core")
+		compile("net.sf.ehcache:ehcache:${ehcache_version}")
+		testCompile project(path: ":cas-server-core", configuration: "tests")
+	}
+}
+
+project("cas-server-integration-memcached") {
+	dependencies {
+		compile project(":cas-server-core")
+		compile("net.spy:spymemcached:${spy_memcached_version}")
+		compile("com.googlecode:kryo:${kryo_version}")
+		provided project(":cas-server-support-saml")
+		testCompile("org.mockito:mockito-core:${mockito_version}")
+	}
+}
+
+project("cas-server-uber-webapp") {
+	apply plugin: "war"
+
+	dependencies {
+		runtime project(":cas-server-webapp") 
+		runtime project(":cas-server-support-jdbc")
+		runtime project(":cas-server-support-ldap")
+		runtime project(":cas-server-support-radius")
+		runtime project(":cas-server-support-x509")
+		runtime project(":cas-server-support-spnego")
+		runtime project(":cas-server-integration-jboss")
+		runtime project(":cas-server-integration-memcached")
+	}
+
+	war {
+	    archiveName "cas.war"
+	}
+}
+
+project("cas-server-documentation") {
+	
+}
+
+project("cas-server-extension-clearpass") {
+	dependencies {
+		compile project(":cas-server-core") 
+		compile("org.jasig.cas.client:cas-client-core:${cas_client_version}") {
+			exclude group: "javax.servlet", module: "servlet-api"
+		}
+		compile("net.sf.ehcache:ehcache:${ehcache_version}")
+		testCompile project(":cas-server-integration-ehcache") 
+	}
+
+}
+
+project("cas-management-webapp") {
+	apply plugin: "war"
+
+	dependencies {
+		compile("com.github.inspektr:inspektr-support-spring:${inspektr_version}")
+		compile("org.springframework.security:spring-security-core:${spring_security_version}")
+		compile("org.springframework.security:spring-security-web:${spring_security_version}")
+		runtime("org.springframework.security:spring-security-cas:${spring_security_version}")
+		runtime("org.springframework.security:spring-security-config:${spring_security_version}")
+		compile("org.springframework:spring-aop:${spring_version}")
+		compile("org.springframework:spring-context-support:${spring_version}")
+		compile("org.springframework:spring-expression:${spring_version}")
+
+		compile project(":cas-server-core") 
+		runtime project(":cas-server-webapp-support")
+
+		compile("org.jasig.cas.client:cas-client-core:${cas_client_version}") {
+			exclude group: "javax.servlet", module: "servlet-api"
+		}
+
+		compile("net.sf.json-lib:json-lib:2.4:jdk15")
+		compile("net.sf.spring-json:spring-json:1.3.1") {
+			exclude group: "net.sf.sojo", module: "sojo-optional"
+			exclude group: "org.springframework", module: "spring"
+			exclude group: "org.springframework", module: "spring-mock"
+			exclude group: "org.springframework", module: "spring-webmvc"	
+		}
+
+		compile("net.sf.sojo:sojo:1.0.5") {
+			exclude group: "commons-attributes", module: "commons-attributes-api"
+			exclude group: "commons-logging", module: "commons-logging"
+		}
+		runtime("javax.servlet:jstl:${jstl_version}")
+		runtime("taglibs:standard:${taglibs_version}")
+	}
+
+	war {
+	    archiveName "cas-management.war"
+	}
+}
+
+project("cas-server-integration-restlet") {
+	dependencies {
+		compile project(":cas-server-core")
+		compile("org.restlet.jee:org.restlet:${restlet_version}")
+		runtime("org.restlet.jee:org.restlet.ext.slf4j:${restlet_version}")
+		runtime("org.restlet.jee:org.restlet.ext.servlet:${restlet_version}")
+		runtime("org.restlet.jee:org.restlet.ext.spring:${restlet_version}") {
+			exclude group: "org.springframework", module: "spring-asm"
+			exclude group: "org.springframework", module: "spring-web"
+			exclude group: "org.springframework", module: "spring-expression"
+		}
+
+		compile("org.springframework:spring-beans:${spring_version}")
+
+		testCompile project(path: ":cas-server-core", configuration: "tests")
+	}
+}
+
+project("cas-server-integration-jboss") {
+	dependencies {
+		compile project(":cas-server-core")
+		compile("org.jboss.cache:jboss-cache-core:2.2.2.GA") {
+			exclude group: "commons-logging", module: "commons-logging"
+		}
+		
+		testCompile project(path: ":cas-server-core", configuration: "tests")
+	}
+}
+
+project("cas-server-support-saml") {
+	dependencies {
+		compile project(":cas-server-core")
+		runtime("org.apache.santuario:xmlsec:1.4.3") {
+			exclude group: "commons-logging", module: "commons-logging"
+		}
+		compile("org.opensaml:opensaml:${opensaml_version}")
+		compile("javax.xml:xmldsig:1.0")
+		compile("jdom:jdom:1.0")
+
+		testCompile project(path: ":cas-server-core", configuration: "tests")
+	}
+}
+
+project("cas-server-support-oauth") {
+	dependencies {
+		compile project(":cas-server-core")
+		compile("com.fasterxml.jackson.core:jackson-databind:${jackson_databind_version}")
+	}
+}
+
+project("cas-server-support-x509") {
+	dependencies {
+		
+		compile project(":cas-server-core")
+		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
+		compile("vt-crypt:edu.vt.middleware:2.1.4")
+		compile("net.sf.ehcache:ehcache-core:${ehcache_version}")
+
+		testCompile project(":cas-server-support-generic")
+		testCompile project(":cas-server-support-legacy")
+	}
+	
+}
+
+project("cas-server-support-radius") {
+	dependencies {
+		compile("net.jradius:jradius-core:${jradius_version}") {
+			 exclude group: "commons-logging", module: "commons-logging"
+		}
+		compile("net.jradius:jradius-dictionary:${jradius_version}") 
+		compile project(":cas-server-core")
+		
+		testCompile("com.fasterxml.jackson.core:jackson-databind:${jackson_databind_version}")
+	}
+	
+}
+
+project("cas-server-webapp") {
+	apply plugin: "war"
+
+
+	dependencies {
+		runtime("javax.servlet:jstl:${jstl_version}")
+		runtime("taglibs:standard:${taglibs_version}")
+		runtime("org.springframework:spring-expression:${spring_version}")
+
+		compile project(":cas-server-webapp-support")
+	}
+
+	war {
+	    archiveName "cas.war"
+	}
+}
+
+task wrapper(type: Wrapper, description: "Gradle's wrapper") {
+    gradleVersion = project.gradleVersion
+}
