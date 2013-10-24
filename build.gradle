@@ -28,7 +28,7 @@ configure(allprojects) { project ->
 
     test {
     	onlyIf { task ->
-			return !Boolean.getBoolean('skip.tests')
+			return !Boolean.getBoolean("skipTests")
 		}
     	useJUnit()
 	    scanForTestClasses false
