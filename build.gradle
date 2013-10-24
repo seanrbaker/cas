@@ -39,7 +39,6 @@ configure(allprojects) { project ->
 				files("${projectDir}/src/test/resources")
 		}
     }
-
 }
 
 configurations {
@@ -54,7 +53,6 @@ configurations {
 
 subprojects {
 	apply plugin: "java"
-	apply plugin: "maven"
 	apply plugin: "project-report"
 	apply plugin: "checkstyle"
 	apply plugin: "license"
@@ -81,8 +79,10 @@ subprojects {
 		mavenCentral()     
 	}
 
+	jar {
+		packaging = "jar"
+	}
 	
-
 	configurations {
 	    tests
 	}
@@ -196,6 +196,10 @@ project("cas-server-webapp-support") {
 		testCompile project(path: ":cas-server-core", configuration: "tests")
 		compile project(":cas-server-support-generic")
 	}
+
+	jar {
+		packaging = "war"
+	}
 }
 
 project("cas-server-support-legacy") {
@@ -303,6 +307,10 @@ project("cas-server-uber-webapp") {
 		runtime project(":cas-server-integration-memcached")
 	}
 
+	jar {
+		packaging = "war"
+	}
+
 	war {
 	    archiveName "cas.war"
 	}
@@ -321,6 +329,9 @@ project("cas-server-compatibility") {
 
 project("cas-server-documentation") {
 	description "Jasig CAS Documentation"
+	jar {
+		extension = "pom"
+	}
 }
 
 project("cas-server-extension-clearpass") {
@@ -377,6 +388,10 @@ project("cas-management-webapp") {
 
 	war {
 	    archiveName "cas-management.war"
+	}
+
+	jar {
+		packaging = "war"
 	}
 }
 
@@ -474,6 +489,10 @@ project("cas-server-webapp") {
 		runtime("org.springframework:spring-expression:${spring_version}")
 
 		compile project(":cas-server-webapp-support")
+	}
+
+	jar {
+		packaging = "war"
 	}
 
 	war {
