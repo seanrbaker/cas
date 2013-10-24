@@ -21,29 +21,22 @@ configure(allprojects) { project ->
 	apply plugin: "propdeps-idea"
 	apply plugin: "propdeps-eclipse"
 	apply plugin: "versions"
+	apply plugin: "nexus"
 
-	uploadArchives {
-	    repositories {
-	        mavenDeployer {
-	            pom.project {
-	                licenses {
-	                    license {
-	                        name 'The Apache Software License, Version 2.0'
-	                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-	                        distribution 'repo'
-	                    }
-	                }
-	            }
-	        }
-	    }
-	}
+	sourceSets.test.resources.srcDirs = ["${projectDir}/src/test/resources", "${projectDir}/src/test/java"]
 
-	sourceSets.test.resources.srcDirs = ["src/test/resources", "src/test/java"]
-	
     test {
+    	onlyIf { task ->
+			return !Boolean.getBoolean('skip.tests')
+		}
+    	useJUnit()
 	    scanForTestClasses false
 	    include '**/*Tests.*'
 	    exclude '**/*Abstract*.*'
+	    test {
+			classpath = project.sourceSets.test.runtimeClasspath + files("${projectDir}/src/main/resources") +
+				files("${projectDir}/src/test/resources")
+		}
     }
 
 }
@@ -64,10 +57,13 @@ subprojects {
 	apply plugin: "project-report"
 	apply plugin: "checkstyle"
 	apply plugin: "license"
+	apply plugin: 'signing'
 
-	apply from: new File(rootDir, "gradle/aspects.gradle")
-	apply from: new File(rootDir, "gradle/license.gradle")
-	apply from: new File(rootDir, "gradle/checkstyle.gradle")
+	apply from: rootProject.file("gradle/aspects.gradle")
+	apply from: rootProject.file("gradle/license.gradle")
+	apply from: rootProject.file("gradle/checkstyle.gradle")
+	apply from: rootProject.file("gradle/tasks.gradle")
+	apply from: rootProject.file("gradle/maven.gradle")
 	
 	repositories {
 		maven { url "http://oss.sonatype.org/content/repositories/releases/" }
@@ -85,10 +81,7 @@ subprojects {
 		mavenCentral()     
 	}
 
-	task testJar(type: Jar, dependsOn: testClasses, description: "archive the testClasses") {
-	   baseName = "test-${project.archivesBaseName}"
-	   from sourceSets.test.output
-	}
+	
 
 	configurations {
 	    tests
@@ -96,6 +89,14 @@ subprojects {
 
 	artifacts {
 	   tests testJar
+
+	   archives jar
+	   archives javadocJar
+	   archives sourcesJar
+	}
+
+	signing {
+	    sign configurations.archives
 	}
 
 	dependencies {
@@ -385,10 +386,6 @@ project("cas-management-webapp") {
 	war {
 	    archiveName "cas-management.war"
 	}
-
-	test {
-		classpath = project.sourceSets.test.runtimeClasspath + files("${projectDir}/src/main/resources")
-	}
 }
 
 project("cas-server-integration-restlet") {
@@ -492,6 +489,3 @@ project("cas-server-webapp") {
 	}
 }
 
-task wrapper(type: Wrapper, description: "Gradle's wrapper") {
-    gradleVersion = project.gradleVersion
-}
