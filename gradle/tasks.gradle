@@ -2,16 +2,6 @@ task testJar(type: Jar, dependsOn: testClasses, description: "archive the testCl
    baseName = "test-${project.archivesBaseName}"
    from sourceSets.test.output
 }
-	
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from 'build/docs/javadoc'
-}
- 
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
 
 task wrapper(type: Wrapper, description: "Gradle's wrapper") {
     gradleVersion = project.gradleVersion

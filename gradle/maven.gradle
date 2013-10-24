@@ -1,182 +1,172 @@
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
- 
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-              authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
- 
-            pom.project {
-				name ${name}
-				packaging ${packaging}
-				description ${description}
-				url ${url}
-				inceptionYear ${inceptionYear}
-	
-				distributionManagement {
-					site {
-						id "cas-site"
-						name "CAS Staging Site Documentation"
-						url "file:${site_deployDirectory}"
-					}
-				}
-				scm {
-				   url ${scm_url}
-				   connection ${scm_connection}
-				   developerConnection ${scm_developer_connection}
-				}
-					
-				issueManagement {
-					system "JIRA" 
-					url "https://issues.jasig.org/browse/CAS"
-				}
+modifyPom  {
+    project {
+		name ${name}
+		packaging ${packaging}
+		description ${description}
+		url ${url}
+		inceptionYear ${inceptionYear}
 
-				licenses {
-				   license {
-				       name "The Apache Software License, Version 2.0"
-				       url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-				       distribution "repo"
-				   }
-				}
- 				mailingLists {
-					mailingList {
-						name "cas-user"
-						subscribe "join-cas-user@lists.jasig.org"
-						unsubscribe "leave-cas-user@lists.jasig.org"
-						post "cas-user@lists.jasig.org"
-						archive "https://lists.wisc.edu/read/?forum=cas-user"
-					}
-					mailingList {
-						name "cas-dev"
-						subscribe "join-cas-dev@lists.jasig.org"
-						unsubscribe "leave-cas-dev@lists.jasig.org"
-						post "cas-dev@lists.jasig.org"
-						archive "https://lists.wisc.edu/read/?forum=cas-dev"
-					}
-					mailingList {
-						name "cas-announce"
-						subscribe "join-cas-announce@lists.jasig.org"
-						unsubscribe "leave-cas-announce@lists.jasig.org"
-						post "cas-announce@lists.jasig.org"
-						archive "https://lists.wisc.edu/read/?forum=cas-announce"
-					}
- 				}
- 				contributors {
- 					contibutor {
-					  name "Adam Rybicki"
-					  email "arybicki@unicon.net"
-					}
-					contibutor {
-					  name "Andrew Tillinghast"
-					  email "atilling@conncoll.edu"
-					}
-					contibutor {
-					  name "Arnaud Lesueur"
-					  email "arnaud.lesueur@gmail.com"
-					}
-					contibutor {
-					  name "Dmitriy Kopylenko"
-					  email "dima767@gmail.com"
-					}
-					contibutor {
-					  name "Drew Mazurek"
-					  email "dmazurek@unicon.net"
-					}
-					contibutor {
-					  name "Eric Dalquist"
-					  email "eric.dalquist@doit.wisc.edu"
-					}
-					contibutor {
-					  name "Eric Pierce"
-					  email "epierce@usf.edu"
-					}
-					contibutor {
-					  name "Frederic Esnault"
-					  email "esnault.frederic@gmail.com"
-					}
-					contibutor {
-					  name "Howard Gilbert"
-					  email "Howard.Gilbert@yale.edu"
-					}
-					contibutor {
-					  name "Jan Van der Velpen"
-					  email "velpi@industria.be"
-					}
-					contibutor {
-					  name "John Martin"
-					  email "jmartin@unicon.net"
-					}
-					contibutor {
-					  name "MarcAntoine Garrigue"
-					  email "marc.antoine.garrigue@gmail.com"
-					}
-					contibutor {
-					  name "Mihir Patel"
-					  email "exploremihir@gmail.com"
-					}
- 				}
- 				
-				developers {
-					developer {
-					   id "battags"
-					   name "Scott Battaglia"
-					   timezone "-5"
-					   email "scott.battaglia@gmail.com"
-					   roles {
-					   		role "developer"
-					   }
-					}
-					developer {
-					   id "serac"
-					   name "Marvin S. Addison"
-					   timezone "-5"
-					   email "scott.battaglia@gmail.com"
-					   roles {
-					   		role "developer"
-					   		role "cas-server-support-ldap module lead"
-					   		role "cas-server-support-x509 module lead"
-					   }
-					}
-					developer {
-					   id "wgthom"
-					   name "William G. Thompson"
-					   timezone "-5"
-					   email "wgthom@gmail.com"
-					   roles {
-					   		role "developer"
-					   }
-					}
-					developer {
-					   id "apetro"
-					   name "Andrew Petro"
-					   timezone "-5"
-					   email "andrew.w.petro@gmail.com"
-					   roles {
-					   		role "developer"
-					   }
-					}
-					developer {
-					   id "leleuj"
-					   name "Jérôme Leleu"
-					   timezone "-5"
-					   email "leleuj@gmail.com"
-					   roles {
-					   		role "developer"
-					   		role "cas-server-support-oauth module lead"
-					   }
-					}
-					developer {
-					   id "mmoayyed"
-					   name "Misagh Moayyed"
-					   timezone "-5"
-					   email "mmoayyed@unicon.net"
-					   roles {
-					   		role "developer"
-					   }
-					}
-               	}
-           	}
-    	}
-    }
+		distributionManagement {
+			site {
+				id "cas-site"
+				name "CAS Staging Site Documentation"
+				url "file:${site_deployDirectory}"
+			}
+		}
+		scm {
+		   url ${scm_url}
+		   connection ${scm_connection}
+		   developerConnection ${scm_developer_connection}
+		}
+			
+		issueManagement {
+			system "JIRA" 
+			url "https://issues.jasig.org/browse/CAS"
+		}
+
+		licenses {
+		   license {
+		       name "The Apache Software License, Version 2.0"
+		       url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+		       distribution "repo"
+		   }
+		}
+			mailingLists {
+			mailingList {
+				name "cas-user"
+				subscribe "join-cas-user@lists.jasig.org"
+				unsubscribe "leave-cas-user@lists.jasig.org"
+				post "cas-user@lists.jasig.org"
+				archive "https://lists.wisc.edu/read/?forum=cas-user"
+			}
+			mailingList {
+				name "cas-dev"
+				subscribe "join-cas-dev@lists.jasig.org"
+				unsubscribe "leave-cas-dev@lists.jasig.org"
+				post "cas-dev@lists.jasig.org"
+				archive "https://lists.wisc.edu/read/?forum=cas-dev"
+			}
+			mailingList {
+				name "cas-announce"
+				subscribe "join-cas-announce@lists.jasig.org"
+				unsubscribe "leave-cas-announce@lists.jasig.org"
+				post "cas-announce@lists.jasig.org"
+				archive "https://lists.wisc.edu/read/?forum=cas-announce"
+			}
+			}
+			contributors {
+				contibutor {
+			  name "Adam Rybicki"
+			  email "arybicki@unicon.net"
+			}
+			contibutor {
+			  name "Andrew Tillinghast"
+			  email "atilling@conncoll.edu"
+			}
+			contibutor {
+			  name "Arnaud Lesueur"
+			  email "arnaud.lesueur@gmail.com"
+			}
+			contibutor {
+			  name "Dmitriy Kopylenko"
+			  email "dima767@gmail.com"
+			}
+			contibutor {
+			  name "Drew Mazurek"
+			  email "dmazurek@unicon.net"
+			}
+			contibutor {
+			  name "Eric Dalquist"
+			  email "eric.dalquist@doit.wisc.edu"
+			}
+			contibutor {
+			  name "Eric Pierce"
+			  email "epierce@usf.edu"
+			}
+			contibutor {
+			  name "Frederic Esnault"
+			  email "esnault.frederic@gmail.com"
+			}
+			contibutor {
+			  name "Howard Gilbert"
+			  email "Howard.Gilbert@yale.edu"
+			}
+			contibutor {
+			  name "Jan Van der Velpen"
+			  email "velpi@industria.be"
+			}
+			contibutor {
+			  name "John Martin"
+			  email "jmartin@unicon.net"
+			}
+			contibutor {
+			  name "MarcAntoine Garrigue"
+			  email "marc.antoine.garrigue@gmail.com"
+			}
+			contibutor {
+			  name "Mihir Patel"
+			  email "exploremihir@gmail.com"
+			}
+			}
+
+		developers {
+			developer {
+			   id "battags"
+			   name "Scott Battaglia"
+			   timezone "-5"
+			   email "scott.battaglia@gmail.com"
+			   roles {
+			   		role "developer"
+			   }
+			}
+			developer {
+			   id "serac"
+			   name "Marvin S. Addison"
+			   timezone "-5"
+			   email "scott.battaglia@gmail.com"
+			   roles {
+			   		role "developer"
+			   		role "cas-server-support-ldap module lead"
+			   		role "cas-server-support-x509 module lead"
+			   }
+			}
+			developer {
+			   id "wgthom"
+			   name "William G. Thompson"
+			   timezone "-5"
+			   email "wgthom@gmail.com"
+			   roles {
+			   		role "developer"
+			   }
+			}
+			developer {
+			   id "apetro"
+			   name "Andrew Petro"
+			   timezone "-5"
+			   email "andrew.w.petro@gmail.com"
+			   roles {
+			   		role "developer"
+			   }
+			}
+			developer {
+			   id "leleuj"
+			   name "Jérôme Leleu"
+			   timezone "-5"
+			   email "leleuj@gmail.com"
+			   roles {
+			   		role "developer"
+			   		role "cas-server-support-oauth module lead"
+			   }
+			}
+			developer {
+			   id "mmoayyed"
+			   name "Misagh Moayyed"
+			   timezone "-5"
+			   email "mmoayyed@unicon.net"
+			   roles {
+			   		role "developer"
+			   }
+			}
+       	}
+   	}
 }
