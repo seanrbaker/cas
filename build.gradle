@@ -1,9 +1,12 @@
 buildscript {
 	repositories {
-    	maven { url "http://repo.springsource.org/plugins-release" }
+		mavenCentral()
+    	maven { url "http://repo.springsource.org/plugins-release" }  
 	}
 	dependencies {
 	    classpath("org.springframework.build.gradle:propdeps-plugin:0.0.4")
+	    classpath("nl.javadude.gradle.plugins:license-gradle-plugin:0.6.0")
+	    classpath("com.github.ben-manes:gradle-versions-plugin:0.4")
     }
 }
 
@@ -17,6 +20,7 @@ configure(allprojects) { project ->
 	apply plugin: "propdeps-maven"
 	apply plugin: "propdeps-idea"
 	apply plugin: "propdeps-eclipse"
+	apply plugin: "versions"
 
 	uploadArchives {
 	    repositories {
@@ -33,6 +37,15 @@ configure(allprojects) { project ->
 	        }
 	    }
 	}
+
+	sourceSets.test.resources.srcDirs = ["src/test/resources", "src/test/java"]
+	
+    test {
+	    scanForTestClasses false
+	    include '**/*Tests.*'
+	    exclude '**/*Abstract*.*'
+    }
+
 }
 
 configurations {
@@ -50,29 +63,24 @@ subprojects {
 	apply plugin: "maven"
 	apply plugin: "project-report"
 	apply plugin: "checkstyle"
+	apply plugin: "license"
 
 	apply from: new File(rootDir, "gradle/aspects.gradle")
-
-	checkstyle {
-		configFile = new File(rootDir, "checkstyle-rules.xml")
-		configProperties = ["checkstyle.suppressions.file": new File(rootDir, "checkstyle-suppressions.xml")]
-		ignoreFailures false
-		showViolations true
-		toolVersion "5.6"
-	}
-
+	apply from: new File(rootDir, "gradle/license.gradle")
+	apply from: new File(rootDir, "gradle/checkstyle.gradle")
+	
 	repositories {
 		maven { url "http://oss.sonatype.org/content/repositories/releases/" }
-		maven { url "thtp://oss.sonatype.org/content/repositories/snapshots/" }
+		maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
 		maven { url "https://maven.java.net/content/repositories/releases" }
 		maven { url "https://repository.apache.org/content/repositories/releases" } 
 		maven { url "http://repo.spring.io/libs-release" }
 		maven { url "http://repo.springsource.org/plugins-release" }
-		maven { url "http://coova-dev.s3.amazonaws.com/mvn" }
+		
 		maven { url "http://maven.restlet.org" }
 		maven { url "http://developer.ja-sig.org/maven2" }
-		maven { url "http://repository.jboss.org/nexus/content/groups/public-jboss" }
-
+		maven { url "https://repository.jboss.org/nexus/content/repositories/releases/" }
+		
 		mavenLocal()
 		mavenCentral()     
 	}
@@ -100,7 +108,7 @@ subprojects {
 		testCompile("junit:junit:${junit_version}")
 		testCompile("org.springframework:spring-test:${spring_version}")
 		testCompile("org.mockito:mockito-core:${mockito_version}")
-		
+
 		testRuntime("org.hibernate:hibernate-entitymanager:${hibernate_core_version}")	
 
 		compile("org.aspectj:aspectjrt:${aspectj_version}")
@@ -377,6 +385,10 @@ project("cas-management-webapp") {
 	war {
 	    archiveName "cas-management.war"
 	}
+
+	test {
+		classpath = project.sourceSets.test.runtimeClasspath + files("${projectDir}/src/main/resources")
+	}
 }
 
 project("cas-server-integration-restlet") {
@@ -401,9 +413,10 @@ project("cas-server-integration-restlet") {
 
 project("cas-server-integration-jboss") {
 	description "Jasig CAS JBoss Cache Integration"
+
 	dependencies {
 		compile project(":cas-server-core")
-		compile("org.jboss.cache:jboss-cache-core:${jboss_cache_version}") {
+		compile("org.jboss.cache:jbosscache-core:${jboss_cache_version}") {
 			exclude group: "commons-logging", module: "commons-logging"
 		}
 		
@@ -439,8 +452,8 @@ project("cas-server-support-x509") {
 	dependencies {
 		compile project(":cas-server-core")
 		compile("org.springframework.webflow:spring-webflow:${spring_webflow_version}")
-		compile("vt-crypt:edu.vt.middleware:2.1.4")
-		compile("net.sf.ehcache:ehcache-core:${ehcache_version}")
+		compile("edu.vt.middleware:vt-crypt:2.2")
+		compile("net.sf.ehcache:ehcache:${ehcache_version}")
 
 		testCompile project(":cas-server-support-generic")
 		testCompile project(":cas-server-support-legacy")

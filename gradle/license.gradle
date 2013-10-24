@@ -1,0 +1,38 @@
+license {
+	ignoreFailures false
+	header rootProject.file("src/licensing/header.txt")
+	skipExistingHeaders true
+	strictCheck true
+    sourceSets {
+        all {
+            resources {
+                exclude "**/INSTALL*"
+				exclude "**/NOTICE*"
+				exclude "**/README*"
+				exclude "**/readme*"
+				exclude "**/*.log"
+				exclude "**/*.license"
+				exclude "**/*.txt"
+				exclude "**/*.crt"
+				exclude "**/*.crl"
+				exclude "**/*.key"
+				exclude "**/*.checkstyle"
+				exclude "**/*.properties"
+				exclude "**/.gitignore"
+				exclude "**/overlays/**"
+				exclude "src/licensing/**"
+				exclude "**/testCA/**"
+				exclude "**/.idea/**"
+				exclude "**/*.keystore"
+				exclude "**/*.example"
+				exclude "**/*.sample"
+				exclude "**/*.conf"
+				exclude "**/*.doc"
+				exclude "**/*.jmx"
+				exclude "**/*.ldif"
+				exclude "**/*.schema"
+            }
+        }
+    }
+}
+   

@@ -1,0 +1,7 @@
+checkstyle {
+	configFile new File(rootDir, "checkstyle-rules.xml")
+	configProperties = ["checkstyle.suppressions.file": new File(rootDir, "checkstyle-suppressions.xml")]
+	ignoreFailures false
+	showViolations true
+	toolVersion "5.6"
+}
