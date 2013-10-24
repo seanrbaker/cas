@@ -1,3 +1,7 @@
+licenseTest {
+	enabled = !Boolean.getBoolean("licenseSkip")
+}
+
 license {
 	ignoreFailures false
 	header rootProject.file("src/licensing/header.txt")
