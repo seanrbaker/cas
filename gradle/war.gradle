@@ -1,0 +1,25 @@
+allprojects {
+	beforeEvaluate { project ->
+		if (project.name.endsWith("-webapp")) {
+			project.apply(plugin: "war")
+			
+			project.apply(plugin: "tomcat")
+			project.dependencies.add("tomcat", "org.apache.tomcat.embed:tomcat-embed-core:${tomcat_version}")
+			project.dependencies.add("tomcat", "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcat_version}")
+								.exclude(group: "org.eclipse.jdt.core.compiler", module: "ecj")
+
+			project.war.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+			project.war.classpath += files("${projectDir}/src/main/resources")
+			project.war.archiveName = "cas.war"
+			project.war.baseName = "cas"
+
+			project.tomcatRunWar.enableSSL = true
+			project.tomcatRunWar.httpPort = 8080
+			project.tomcatRunWar.httpsPort = 8443
+			project.tomcatRunWar.keystoreFile = new File(System.getProperty("user.home"), ".keystore")
+			project.tomcatRunWar.keystorePass = "changeit"
+			project.tomcatRunWar.contextPath = "cas"
+
+		}
+	}
+}

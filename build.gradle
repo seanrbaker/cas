@@ -24,10 +24,7 @@ configure(allprojects) { project ->
 	apply plugin: "propdeps-maven"
 	apply plugin: "propdeps-idea"
 	apply plugin: "propdeps-eclipse"
-	apply plugin: "versions"
-	apply plugin: "nexus"
-	apply plugin: "release"
-
+	
 	sourceSets.test.resources.srcDirs = ["${projectDir}/src/test/resources", "${projectDir}/src/test/java"]
 
     test {
@@ -38,7 +35,7 @@ configure(allprojects) { project ->
 	    scanForTestClasses false
 	    include '**/*Tests.*'
 	    exclude '**/*Abstract*.*'
-		classpath = project.sourceSets.test.runtimeClasspath + files("${projectDir}/src/main/resources") +
+		classpath = it.classpath + files("${projectDir}/src/main/resources") +
 				files("${projectDir}/src/test/resources")
 		
     }
@@ -49,8 +46,8 @@ configurations {
 		resolutionStrategy {
 			failOnVersionConflict()
 		}
-		exclude group: "cglib", module: "cglib"
-		exclude group: "cglib", module: "cglib-full"
+		exclude(group: "cglib", module: "cglib")
+		exclude(group: "cglib", module: "cglib-full")
 	}
 }
 
@@ -59,8 +56,11 @@ subprojects {
 	apply plugin: "project-report"
 	apply plugin: "checkstyle"
 	apply plugin: "license"
-	apply plugin: "tomcat"
-
+	apply plugin: "versions"
+	apply plugin: "nexus"
+	apply plugin: "release"
+	
+	apply from: rootProject.file("gradle/war.gradle")
 	apply from: rootProject.file("gradle/aspects.gradle")
 	apply from: rootProject.file("gradle/license.gradle")
 	apply from: rootProject.file("gradle/checkstyle.gradle")
@@ -86,10 +86,6 @@ subprojects {
 	release {
 		tagPrefix = "v${project.version}"
 	}
-
-	jar {
-		packaging = "jar"
-	}
 	
 	configurations {
 	    tests
@@ -99,20 +95,10 @@ subprojects {
 	   tests testJar
 	}
 
-	tomcatRunWar {
-		enableSSL true
-		httpPort 8080
-		httpsPort 8443
-		keystoreFile = new File(System.getProperty("user.home"), ".keystore")
-		keystorePass "changeit"
-	}
-
 	dependencies {
-		ajc "org.aspectj:aspectjtools:${aspectj_version}"
+		ajc("org.aspectj:aspectjtools:${aspectj_version}")
 
 		provided("javax.servlet:servlet-api:${servlet_api_version}")
-		provided("cglib:cglib:[2.0, )")
-		provided("cglib:cglib-full:[2.0, )")
 
 		testCompile("junit:junit:${junit_version}")
 		testCompile("org.springframework:spring-test:${spring_version}")
@@ -128,7 +114,7 @@ subprojects {
 
 		compile("org.slf4j:slf4j-api:${slf4j_version}")
 		runtime("org.slf4j:slf4j-log4j12:${slf4j_version}") {
-			exclude group: "log4j", module: "log4j"
+			exclude(group: "log4j", module: "log4j")
 		}
 		compile("org.slf4j:jcl-over-slf4j:${slf4j_version}")
 	}
@@ -145,10 +131,10 @@ project("cas-server-core") {
 		compile("com.github.inspektr:inspektr-support-spring:${inspektr_version}")
 
 		compile("log4j:log4j:${log4j_version}") {
-			 exclude group: "javax.mail", module: "mail"
-			 exclude group: "javax.jms", module: "jms"
-			 exclude group: "com.sun.jdmk", module: "jmxtools"
-			 exclude group: "com.sun.jmx", module: "jmxri"
+			 exclude(group: "javax.mail", module: "mail")
+			 exclude(group: "javax.jms", module: "jms")
+			 exclude(group: "com.sun.jdmk", module: "jmxtools")
+			 exclude(group: "com.sun.jmx", module: "jmxri")
 		}
 		compile("org.jasig.service.persondir:person-directory-impl:${persondir_version}")
 
@@ -177,7 +163,7 @@ project("cas-server-core") {
 		testRuntime("javassist:javassist:3.12.1.GA")	
 
 		runtime("commons-jexl:commons-jexl:${commons_jexl_version}") {
-			exclude group: "commons-logging", module: "commons-logging"
+			exclude(group: "commons-logging", module: "commons-logging")
 		}
 	}
 }
@@ -211,10 +197,6 @@ project("cas-server-webapp-support") {
 
 		testCompile project(path: ":cas-server-core", configuration: "tests")
 		compile project(":cas-server-support-generic")
-	}
-
-	jar {
-		packaging = "war"
 	}
 }
 
@@ -309,8 +291,6 @@ project("cas-server-integration-memcached") {
 }
 
 project("cas-server-uber-webapp") {
-	apply plugin: "war"
-
 	description "Jasig CAS - Uber WAR"
 	dependencies {
 		runtime project(":cas-server-webapp") 
@@ -321,16 +301,6 @@ project("cas-server-uber-webapp") {
 		runtime project(":cas-server-support-spnego")
 		runtime project(":cas-server-integration-jboss")
 		runtime project(":cas-server-integration-memcached")
-	}
-
-	jar {
-		packaging = "war"
-	}
-
-	war {
-	    archiveName "cas.war"
-	    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	    classpath = it.classpath + files("${projectDir}/src/main/resources")
 	}
 }
 
@@ -358,7 +328,7 @@ project("cas-server-extension-clearpass") {
 	dependencies {
 		compile project(":cas-server-core") 
 		compile("org.jasig.cas.client:cas-client-core:${cas_client_version}") {
-			exclude group: "javax.servlet", module: "servlet-api"
+			exclude(group: "javax.servlet", module: "servlet-api")
 		}
 		compile("net.sf.ehcache:ehcache:${ehcache_version}")
 		testCompile project(":cas-server-integration-ehcache") 
@@ -367,8 +337,6 @@ project("cas-server-extension-clearpass") {
 }
 
 project("cas-management-webapp") {
-	apply plugin: "war"
-
 	description "Jasig CAS Management Web Application"
 
 	dependencies {
@@ -385,44 +353,25 @@ project("cas-management-webapp") {
 		runtime project(":cas-server-webapp-support")
 
 		compile("org.jasig.cas.client:cas-client-core:${cas_client_version}") {
-			exclude group: "javax.servlet", module: "servlet-api"
+			exclude(group: "javax.servlet", module: "servlet-api")
 		}
 
 		compile("net.sf.json-lib:json-lib:2.4:jdk15")
 		compile("net.sf.spring-json:spring-json:1.3.1") {
-			exclude group: "net.sf.sojo", module: "sojo-optional"
-			exclude group: "org.springframework", module: "spring"
-			exclude group: "org.springframework", module: "spring-mock"
-			exclude group: "org.springframework", module: "spring-webmvc"	
+			exclude(group: "net.sf.sojo", module: "sojo-optional")
+			exclude(group: "org.springframework", module: "spring")
+			exclude(group: "org.springframework", module: "spring-mock")
+			exclude(group: "org.springframework", module: "spring-webmvc")
 		}
 
 		compile("net.sf.sojo:sojo:1.0.5") {
-			exclude group: "commons-attributes", module: "commons-attributes-api"
-			exclude group: "commons-logging", module: "commons-logging"
+			exclude(group: "commons-attributes", module: "commons-attributes-api")
+			exclude(group: "commons-logging", module: "commons-logging")
 		}
 		runtime("javax.servlet:jstl:${jstl_version}")
 		runtime("taglibs:standard:${taglibs_version}")
 
-		tomcat("org.apache.tomcat.embed:tomcat-embed-core:${tomcat_version}",
-           	"org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcat_version}")
-	    tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:${tomcat_version}") {
-	        exclude group: 'org.eclipse.jdt.core.compiler', module: 'ecj'
-	    }
-	}
 
-	war {
-	    archiveName "cas-management.war"
-	    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	    classpath = it.classpath + files("${projectDir}/src/main/resources")
-	    baseName "cas-management"
-	}
-
-	jar {
-		packaging = "war"
-	}
-
-	tomcatRunWar {
-		contextPath war.baseName
 	}
 }
 
@@ -435,9 +384,9 @@ project("cas-server-integration-restlet") {
 		runtime("org.restlet.jee:org.restlet.ext.slf4j:${restlet_version}")
 		runtime("org.restlet.jee:org.restlet.ext.servlet:${restlet_version}")
 		runtime("org.restlet.jee:org.restlet.ext.spring:${restlet_version}") {
-			exclude group: "org.springframework", module: "spring-asm"
-			exclude group: "org.springframework", module: "spring-web"
-			exclude group: "org.springframework", module: "spring-expression"
+			exclude(group: "org.springframework", module: "spring-asm")
+			exclude(group: "org.springframework", module: "spring-web")
+			exclude(group: "org.springframework", module: "spring-expression")
 		}
 
 		compile("org.springframework:spring-beans:${spring_version}")
@@ -452,7 +401,7 @@ project("cas-server-integration-jboss") {
 	dependencies {
 		compile project(":cas-server-core")
 		compile("org.jboss.cache:jbosscache-core:${jboss_cache_version}") {
-			exclude group: "commons-logging", module: "commons-logging"
+			exclude(group: "commons-logging", module: "commons-logging")
 		}
 		
 		testCompile project(path: ":cas-server-core", configuration: "tests")
@@ -464,7 +413,7 @@ project("cas-server-support-saml") {
 	dependencies {
 		compile project(":cas-server-core")
 		runtime("org.apache.santuario:xmlsec:1.4.3") {
-			exclude group: "commons-logging", module: "commons-logging"
+			exclude(group: "commons-logging", module: "commons-logging")
 		}
 		compile("org.opensaml:opensaml:${opensaml_version}")
 		compile("javax.xml:xmldsig:1.0")
@@ -500,7 +449,7 @@ project("cas-server-support-radius") {
 	description "Jasig CAS RADIUS Support"
 	dependencies {
 		compile("net.jradius:jradius-core:${jradius_version}") {
-			 exclude group: "commons-logging", module: "commons-logging"
+			 exclude(group: "commons-logging", module: "commons-logging")
 		}
 		compile("net.jradius:jradius-dictionary:${jradius_version}") 
 		compile project(":cas-server-core")
@@ -511,37 +460,14 @@ project("cas-server-support-radius") {
 }
 
 project("cas-server-webapp") {
-	apply plugin: "war"
-
 	description "Jasig CAS Web Application"
 	dependencies {
 		runtime("javax.servlet:jstl:${jstl_version}")
 		runtime("taglibs:standard:${taglibs_version}")
 		runtime("org.springframework:spring-expression:${spring_version}")
 
-		tomcat("org.apache.tomcat.embed:tomcat-embed-core:${tomcat_version}",
-           	"org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcat_version}")
-
-	    tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:${tomcat_version}") {
-	        exclude group: 'org.eclipse.jdt.core.compiler', module: 'ecj'
-	    }
 
 		compile project(":cas-server-webapp-support")
-	}
-
-	jar {
-		packaging = "war"
-	}
-
-	war {
-	    archiveName "cas.war"
-	    baseName "cas"
-	    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	    classpath = it.classpath + files("${projectDir}/src/main/resources")
-	}
-
-	tomcatRunWar {
-		contextPath war.baseName
 	}
 }
 

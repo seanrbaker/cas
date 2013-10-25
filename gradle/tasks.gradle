@@ -6,3 +6,4 @@ task testJar(type: Jar, dependsOn: testClasses, description: "archive the testCl
 task wrapper(type: Wrapper, description: "Gradle's wrapper") {
     gradleVersion = project.gradleVersion
 }
+
