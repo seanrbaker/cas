@@ -4,4 +4,13 @@ checkstyle {
 	ignoreFailures false
 	showViolations true
 	toolVersion "5.6"
+	
+}
+
+checkstyleTest {
+	enabled = !Boolean.getBoolean("checkstyleSkip")
+}
+
+checkstyleMain {
+	enabled = !Boolean.getBoolean("checkstyleSkip")
 }
