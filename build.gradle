@@ -1,6 +1,7 @@
 buildscript {
 	repositories {
 		mavenCentral()
+		jcenter()
     	maven { url "http://repo.springsource.org/plugins-release" }  
 	}
 	dependencies {
@@ -8,6 +9,8 @@ buildscript {
 	    classpath("nl.javadude.gradle.plugins:license-gradle-plugin:0.6.0")
 	    classpath("com.github.ben-manes:gradle-versions-plugin:0.4")
 	    classpath("org.gradle.api.plugins:gradle-nexus-plugin:0.3")
+	    classpath("com.github.townsfolk:gradle-release:1.2")
+	    classpath("org.gradle.api.plugins:gradle-tomcat-plugin:1.0")
     }
 }
 
@@ -23,7 +26,8 @@ configure(allprojects) { project ->
 	apply plugin: "propdeps-eclipse"
 	apply plugin: "versions"
 	apply plugin: "nexus"
-	
+	apply plugin: "release"
+
 	sourceSets.test.resources.srcDirs = ["${projectDir}/src/test/resources", "${projectDir}/src/test/java"]
 
     test {
@@ -34,10 +38,9 @@ configure(allprojects) { project ->
 	    scanForTestClasses false
 	    include '**/*Tests.*'
 	    exclude '**/*Abstract*.*'
-	    test {
-			classpath = project.sourceSets.test.runtimeClasspath + files("${projectDir}/src/main/resources") +
+		classpath = project.sourceSets.test.runtimeClasspath + files("${projectDir}/src/main/resources") +
 				files("${projectDir}/src/test/resources")
-		}
+		
     }
 }
 
@@ -56,7 +59,8 @@ subprojects {
 	apply plugin: "project-report"
 	apply plugin: "checkstyle"
 	apply plugin: "license"
-	
+	apply plugin: "tomcat"
+
 	apply from: rootProject.file("gradle/aspects.gradle")
 	apply from: rootProject.file("gradle/license.gradle")
 	apply from: rootProject.file("gradle/checkstyle.gradle")
@@ -79,6 +83,10 @@ subprojects {
 		mavenCentral()     
 	}
 
+	release {
+		tagPrefix = "v${project.version}"
+	}
+
 	jar {
 		packaging = "jar"
 	}
@@ -89,6 +97,14 @@ subprojects {
 
 	artifacts {
 	   tests testJar
+	}
+
+	tomcatRunWar {
+		enableSSL true
+		httpPort 8080
+		httpsPort 8443
+		keystoreFile = new File(System.getProperty("user.home"), ".keystore")
+		keystorePass "changeit"
 	}
 
 	dependencies {
@@ -313,6 +329,8 @@ project("cas-server-uber-webapp") {
 
 	war {
 	    archiveName "cas.war"
+	    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	    classpath = it.classpath + files("${projectDir}/src/main/resources")
 	}
 }
 
@@ -384,14 +402,27 @@ project("cas-management-webapp") {
 		}
 		runtime("javax.servlet:jstl:${jstl_version}")
 		runtime("taglibs:standard:${taglibs_version}")
+
+		tomcat("org.apache.tomcat.embed:tomcat-embed-core:${tomcat_version}",
+           	"org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcat_version}")
+	    tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:${tomcat_version}") {
+	        exclude group: 'org.eclipse.jdt.core.compiler', module: 'ecj'
+	    }
 	}
 
 	war {
 	    archiveName "cas-management.war"
+	    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	    classpath = it.classpath + files("${projectDir}/src/main/resources")
+	    baseName "cas-management"
 	}
 
 	jar {
 		packaging = "war"
+	}
+
+	tomcatRunWar {
+		contextPath war.baseName
 	}
 }
 
@@ -488,6 +519,13 @@ project("cas-server-webapp") {
 		runtime("taglibs:standard:${taglibs_version}")
 		runtime("org.springframework:spring-expression:${spring_version}")
 
+		tomcat("org.apache.tomcat.embed:tomcat-embed-core:${tomcat_version}",
+           	"org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcat_version}")
+
+	    tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:${tomcat_version}") {
+	        exclude group: 'org.eclipse.jdt.core.compiler', module: 'ecj'
+	    }
+
 		compile project(":cas-server-webapp-support")
 	}
 
@@ -497,6 +535,13 @@ project("cas-server-webapp") {
 
 	war {
 	    archiveName "cas.war"
+	    baseName "cas"
+	    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	    classpath = it.classpath + files("${projectDir}/src/main/resources")
+	}
+
+	tomcatRunWar {
+		contextPath war.baseName
 	}
 }
 
