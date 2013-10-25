@@ -13,6 +13,16 @@ allprojects {
 			project.war.archiveName = "cas.war"
 			project.war.baseName = "cas"
 
+			project.war.manifest.attributes.put("Manifest-Version", "1.0")
+			project.war.manifest.attributes.put("Built-By", System.getProperty("user.name"))
+			project.war.manifest.attributes.put("Build-Jdk", System.getProperty("java.version"))
+			project.war.manifest.attributes.put("Specification-Title", project.description)
+			project.war.manifest.attributes.put("Specification-Version", project.version)
+			project.war.manifest.attributes.put("Specification-Vendor", "Jasig")
+			project.war.manifest.attributes.put("Implementation-Title", project.description)
+			project.war.manifest.attributes.put("Implementation-Version", project.version)
+			project.war.manifest.attributes.put("Implementation-Vendor", "Jasig")
+
 			project.tomcatRunWar.enableSSL = true
 			project.tomcatRunWar.httpPort = 8080
 			project.tomcatRunWar.httpsPort = 8443
